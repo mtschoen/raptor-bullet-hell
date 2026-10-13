@@ -284,7 +284,7 @@ export class Renderer {
     const context = this.context;
     context.save(); context.translate(enemy.x, enemy.y);
     if (isGroundEnemy(enemy)) {
-      this.ellipse(2, 4, enemy.radius * 0.95, enemy.radius * 0.55, 'rgba(20, 26, 12, 0.42)');
+      this.ellipse(3, 6, enemy.radius * 1.18, enemy.radius * 0.72, 'rgba(12, 14, 6, 0.55)'); this.ellipse(2, 4, enemy.radius * 0.95, enemy.radius * 0.55, 'rgba(20, 26, 12, 0.45)'); context.strokeStyle = 'rgba(255, 238, 190, 0.38)'; context.lineWidth = 1.6; context.beginPath(); context.ellipse(0, 2, enemy.radius * 1.12, enemy.radius * 0.68, 0, Math.PI * 1.05, Math.PI * 1.95); context.stroke();
       this.ellipse(1, 3, enemy.radius * 0.7, enemy.radius * 0.38, 'rgba(20, 26, 12, 0.30)');
       const groundDrawn = enemy.kind === 'tank' ? this.blitDiffusion('tank', 56, true) : this.blitDiffusion('flak-site', 66, false);
       if (!groundDrawn) this.blit(enemy.kind === 'tank' ? 'tank' : 'flak-site');
