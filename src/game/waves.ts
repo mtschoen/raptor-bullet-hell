@@ -1,6 +1,7 @@
 export type Formation = 'vee' | 'line' | 'pincer' | 'ring' | 'dive';
 
-export type EnemyKind = 'fighter' | 'weaver' | 'bomber' | 'interceptor' | 'boss' | 'tank' | 'flak-site';
+export type EnemyKind =
+  'fighter' | 'weaver' | 'bomber' | 'interceptor' | 'boss' | 'tank' | 'flak-site';
 
 export interface WaveGroup {
   kind: EnemyKind;

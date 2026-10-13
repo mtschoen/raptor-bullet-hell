@@ -14,10 +14,13 @@ Then open http://127.0.0.1:4174/ and confirm the title screen renders.
 ## Bar: does it do what was asked?
 
 ```bash
+npm run lint
+npm run format:check
 npm test
 ```
 
-Verify: all Vitest files pass (patterns, particles, collision, waves).
+Verify: ESLint and Prettier report no findings, and all Vitest files pass
+(patterns, particles, collision, waves, weapons).
 
 In the browser: press Enter to start, steer with arrows, hold Space to fire,
 confirm enemies fall and drop power-ups, take a hit and confirm respawn

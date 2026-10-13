@@ -17,7 +17,10 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
-function buildHudItem(label: string, valueClassName = 'hud-value'): { item: HTMLDivElement; value: HTMLSpanElement } {
+function buildHudItem(
+  label: string,
+  valueClassName = 'hud-value',
+): { item: HTMLDivElement; value: HTMLSpanElement } {
   const item = createElement('div', 'hud-item');
   const labelElement = createElement('span', 'hud-label', label);
   const value = createElement('span', valueClassName, '-');
@@ -60,7 +63,11 @@ function boot(): void {
 
   const startOverlay = createElement('div', 'overlay');
   const startTitle = createElement('h2', '', 'RAPTOR BULLET HELL');
-  const startText = createElement('p', '', 'Pilot the Allied jet through Axis waves, a tribute to Raptor: Call of the Shadows. Move with arrow keys or WASD, fire with Space, bomb with Shift, pause with P or Esc.');
+  const startText = createElement(
+    'p',
+    '',
+    'Pilot the Allied jet through Axis waves, a tribute to Raptor: Call of the Shadows. Move with arrow keys or WASD, fire with Space, bomb with Shift, pause with P or Esc.',
+  );
   const startButton = createElement('button', 'primary-button', 'Start Mission');
   startButton.type = 'button';
   startOverlay.append(startTitle, startText, startButton);
@@ -91,7 +98,11 @@ function boot(): void {
   controlsRestartButton.type = 'button';
   controlsBar.append(pauseButton, muteButton, controlsRestartButton);
 
-  const helpText = createElement('p', 'help-text', 'Keyboard: arrows or WASD move, Space fires, Shift drops a bomb, P or Esc pauses. Collect S, M, R, shield and bomb pickups.');
+  const helpText = createElement(
+    'p',
+    'help-text',
+    'Keyboard: arrows or WASD move, Space fires, Shift drops a bomb, P or Esc pauses. Collect S, M, R, shield and bomb pickups.',
+  );
   cabinet.append(header, hudBar, stageFrame, controlsBar, helpText);
   application.replaceChildren(cabinet);
 
@@ -111,7 +122,8 @@ function boot(): void {
       startOverlay.hidden = snapshot.state !== 'ready';
       pauseOverlay.hidden = snapshot.state !== 'paused';
       gameOverOverlay.hidden = snapshot.state !== 'over';
-      if (snapshot.state === 'over') finalScore.textContent = `Score ${snapshot.score} - Wave ${snapshot.wave}`;
+      if (snapshot.state === 'over')
+        finalScore.textContent = `Score ${snapshot.score} - Wave ${snapshot.wave}`;
       if (snapshot.state === 'ready') startButton.focus();
       if (snapshot.state === 'over') restartButton.focus();
     }
@@ -128,33 +140,63 @@ function boot(): void {
   startButton.addEventListener('click', startMission);
   restartButton.addEventListener('click', startMission);
   controlsRestartButton.addEventListener('click', startMission);
-  resumeButton.addEventListener('click', () => { game.resume(); refreshInterface(); });
-  pauseButton.addEventListener('click', () => { game.togglePause(); refreshInterface(); });
+  resumeButton.addEventListener('click', () => {
+    game.resume();
+    refreshInterface();
+  });
+  pauseButton.addEventListener('click', () => {
+    game.togglePause();
+    refreshInterface();
+  });
   muteButton.addEventListener('click', () => {
     audioEngine.toggleMuted();
-    try { audioEngine.effects.uiClick(); } catch { /* audio is optional */ }
+    try {
+      audioEngine.effects.uiClick();
+    } catch {
+      /* audio is optional */
+    }
     refreshInterface();
   });
 
   window.addEventListener('keydown', (event) => {
     audioEngine.handleUserGesture();
     if (event.code === 'Enter') {
-      if (game.state === 'ready' || game.state === 'over') { event.preventDefault(); startMission(); }
-      else if (game.state === 'paused') { event.preventDefault(); game.resume(); refreshInterface(); }
+      if (game.state === 'ready' || game.state === 'over') {
+        event.preventDefault();
+        startMission();
+      } else if (game.state === 'paused') {
+        event.preventDefault();
+        game.resume();
+        refreshInterface();
+      }
     }
-    if (event.code === 'KeyM') { audioEngine.toggleMuted(); refreshInterface(); }
+    if (event.code === 'KeyM') {
+      audioEngine.toggleMuted();
+      refreshInterface();
+    }
   });
   window.addEventListener('blur', () => {
-    if (game.state === 'playing') { game.pause(); refreshInterface(); }
+    if (game.state === 'playing') {
+      game.pause();
+      refreshInterface();
+    }
   });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && game.state === 'playing') { game.pause(); refreshInterface(); }
+    if (document.hidden && game.state === 'playing') {
+      game.pause();
+      refreshInterface();
+    }
   });
 
   input.attach(window);
   startLoop(
-    (deltaSeconds) => { game.update(deltaSeconds, input); },
-    () => { renderer.render(game.getRenderView()); refreshInterface(); },
+    (deltaSeconds) => {
+      game.update(deltaSeconds, input);
+    },
+    () => {
+      renderer.render(game.getRenderView());
+      refreshInterface();
+    },
   );
   refreshInterface();
 }

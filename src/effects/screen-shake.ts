@@ -59,10 +59,7 @@ export class ScreenShake {
       this.currentOffsetY = 0;
       return;
     }
-    this.traumaValue = Math.max(
-      0,
-      this.traumaValue - this.decayPerSecond * deltaSeconds,
-    );
+    this.traumaValue = Math.max(0, this.traumaValue - this.decayPerSecond * deltaSeconds);
     this.refreshOffsets();
   }
 
@@ -78,14 +75,11 @@ export class ScreenShake {
       this.currentOffsetY = 0;
       return;
     }
-    const quadraticMagnitude =
-      this.traumaValue * this.traumaValue * this.maximumOffsetPixels;
+    const quadraticMagnitude = this.traumaValue * this.traumaValue * this.maximumOffsetPixels;
     const time = this.elapsedSeconds;
     this.currentOffsetX =
-      quadraticMagnitude *
-      (Math.sin(time * 47.3) * 0.7 + Math.sin(time * 89.1) * 0.3);
+      quadraticMagnitude * (Math.sin(time * 47.3) * 0.7 + Math.sin(time * 89.1) * 0.3);
     this.currentOffsetY =
-      quadraticMagnitude *
-      (Math.cos(time * 53.7) * 0.7 + Math.sin(time * 97.9) * 0.3);
+      quadraticMagnitude * (Math.cos(time * 53.7) * 0.7 + Math.sin(time * 97.9) * 0.3);
   }
 }

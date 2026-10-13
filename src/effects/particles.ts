@@ -107,8 +107,7 @@ export class ParticlePool {
     let spawnedCount = 0;
     for (let index = 0; index < count; index += 1) {
       const fraction = count <= 1 ? 0.5 : index / count;
-      const angle =
-        directionRadians - spreadRadians / 2 + spreadRadians * fraction;
+      const angle = directionRadians - spreadRadians / 2 + spreadRadians * fraction;
       const speedFraction = 0.55 + 0.45 * (((this.burstSequence + index) % 5) / 4);
       const spawned = this.spawn({
         x,
@@ -152,10 +151,7 @@ export class ParticlePool {
       }
       slot.x += slot.velocityX * deltaSeconds;
       slot.y += slot.velocityY * deltaSeconds;
-      slot.alpha = Math.min(
-        1,
-        Math.max(0, slot.remainingLifeSeconds / slot.lifeSeconds),
-      );
+      slot.alpha = Math.min(1, Math.max(0, slot.remainingLifeSeconds / slot.lifeSeconds));
     }
   }
 

@@ -2,8 +2,8 @@
 // The context is created lazily and resumed on the first user gesture, which
 // matches browser autoplay rules. Missing Web Audio support is a quiet no-op.
 
-import { MusicEngine } from "./music";
-import { SoundEffects } from "./sound-effects";
+import { MusicEngine } from './music';
+import { SoundEffects } from './sound-effects';
 
 interface AudioContextConstructorHolder {
   AudioContext?: typeof AudioContext;
@@ -11,7 +11,7 @@ interface AudioContextConstructorHolder {
 }
 
 function resolveAudioContextConstructor(): typeof AudioContext | null {
-  if (typeof globalThis === "undefined") {
+  if (typeof globalThis === 'undefined') {
     return null;
   }
   const holder = globalThis as unknown as AudioContextConstructorHolder;
@@ -45,7 +45,10 @@ export class AudioEngine {
   }
 
   public get isAvailable(): boolean {
-    return this.audioContext !== null || (!this.contextCreationFailed && resolveAudioContextConstructor() !== null);
+    return (
+      this.audioContext !== null ||
+      (!this.contextCreationFailed && resolveAudioContextConstructor() !== null)
+    );
   }
 
   public get hasContext(): boolean {
@@ -66,7 +69,7 @@ export class AudioEngine {
     if (audioContext === null) {
       return;
     }
-    if (audioContext.state === "suspended") {
+    if (audioContext.state === 'suspended') {
       try {
         await audioContext.resume();
       } catch {
@@ -83,9 +86,9 @@ export class AudioEngine {
     }
     this.gestureListenerAttached = true;
     const options: AddEventListenerOptions = { once: true, passive: true };
-    target.addEventListener("pointerdown", this.handleFirstGesture, options);
-    target.addEventListener("keydown", this.handleFirstGesture, options);
-    target.addEventListener("touchstart", this.handleFirstGesture, options);
+    target.addEventListener('pointerdown', this.handleFirstGesture, options);
+    target.addEventListener('keydown', this.handleFirstGesture, options);
+    target.addEventListener('touchstart', this.handleFirstGesture, options);
   }
 
   public startMusic(): void {

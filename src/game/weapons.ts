@@ -8,10 +8,38 @@ export interface WeaponDefinition {
 }
 
 export const WEAPON_DEFINITIONS: WeaponDefinition[] = [
-  { level: 1, name: 'Pulse Cannon', fireIntervalSeconds: 0.15, bulletSpeed: 680, spreadCount: 1, damage: 1 },
-  { level: 2, name: 'Twin Cannon', fireIntervalSeconds: 0.14, bulletSpeed: 700, spreadCount: 2, damage: 1 },
-  { level: 3, name: 'Tri Blaster', fireIntervalSeconds: 0.12, bulletSpeed: 730, spreadCount: 3, damage: 1 },
-  { level: 4, name: 'Raptor Barrage', fireIntervalSeconds: 0.11, bulletSpeed: 780, spreadCount: 5, damage: 2 },
+  {
+    level: 1,
+    name: 'Pulse Cannon',
+    fireIntervalSeconds: 0.15,
+    bulletSpeed: 680,
+    spreadCount: 1,
+    damage: 1,
+  },
+  {
+    level: 2,
+    name: 'Twin Cannon',
+    fireIntervalSeconds: 0.14,
+    bulletSpeed: 700,
+    spreadCount: 2,
+    damage: 1,
+  },
+  {
+    level: 3,
+    name: 'Tri Blaster',
+    fireIntervalSeconds: 0.12,
+    bulletSpeed: 730,
+    spreadCount: 3,
+    damage: 1,
+  },
+  {
+    level: 4,
+    name: 'Raptor Barrage',
+    fireIntervalSeconds: 0.11,
+    bulletSpeed: 780,
+    spreadCount: 5,
+    damage: 2,
+  },
 ];
 
 export const MAXIMUM_WEAPON_LEVEL = 4;

@@ -27,10 +27,70 @@ const powerChordSemitoneOffsets: readonly number[] = [0, 7, 12];
 // sixteenth step across the four bar loop. Null entries are rests or
 // the tail of a held note started on an earlier step.
 const leadPatternMidiNotes: readonly (number | null)[] = [
-  76, null, 79, 81, 83, 81, 79, 76, 79, 81, 83, 86, 83, 81, 79, 81,
-  88, null, null, null, 86, 83, 81, 79, 76, 79, 81, 83, 81, 79, 76, null,
-  84, null, null, null, null, null, null, null, 83, 81, 79, 76, 74, 76, null, null,
-  76, 79, 81, 83, 86, 88, 91, 88, 86, 83, 86, 81, 79, 76, 74, null,
+  76,
+  null,
+  79,
+  81,
+  83,
+  81,
+  79,
+  76,
+  79,
+  81,
+  83,
+  86,
+  83,
+  81,
+  79,
+  81,
+  88,
+  null,
+  null,
+  null,
+  86,
+  83,
+  81,
+  79,
+  76,
+  79,
+  81,
+  83,
+  81,
+  79,
+  76,
+  null,
+  84,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  83,
+  81,
+  79,
+  76,
+  74,
+  76,
+  null,
+  null,
+  76,
+  79,
+  81,
+  83,
+  86,
+  88,
+  91,
+  88,
+  86,
+  83,
+  86,
+  81,
+  79,
+  76,
+  74,
+  null,
 ];
 // Steps where the lead note is held and bent up a whole step instead of
 // played as part of a fast run. Indexes are into the four bar loop.
@@ -100,11 +160,7 @@ export class MusicEngine {
     this.intensity = clampIntensity(value);
     if (this.musicGainNode !== null && this.audioContext !== null) {
       const targetVolume = 0.26 + this.intensity * 0.08;
-      this.musicGainNode.gain.setTargetAtTime(
-        targetVolume,
-        this.audioContext.currentTime,
-        0.1,
-      );
+      this.musicGainNode.gain.setTargetAtTime(targetVolume, this.audioContext.currentTime, 0.1);
     }
   }
 
@@ -112,7 +168,7 @@ export class MusicEngine {
     if (this.audioContext === null || this.playing) {
       return;
     }
-    if (this.audioContext.state === "suspended") {
+    if (this.audioContext.state === 'suspended') {
       void this.audioContext.resume().catch(() => undefined);
     }
     this.playing = true;
@@ -152,15 +208,19 @@ export class MusicEngine {
     // feeds this WaveShaper, then a lowpass that keeps the fizz in check.
     this.rhythmDistortionNode = this.audioContext.createWaveShaper();
     this.rhythmDistortionNode.curve = buildDistortionCurve(48);
-    this.rhythmDistortionNode.oversample = "2x";
+    this.rhythmDistortionNode.oversample = '2x';
     const rhythmLowpassNode = this.audioContext.createBiquadFilter();
-    rhythmLowpassNode.type = "lowpass";
+    rhythmLowpassNode.type = 'lowpass';
     rhythmLowpassNode.frequency.value = 3200;
     rhythmLowpassNode.Q.value = 0.4;
     this.rhythmDistortionNode.connect(rhythmLowpassNode);
     rhythmLowpassNode.connect(this.musicGainNode);
     const bufferLength = Math.max(1, Math.floor(this.audioContext.sampleRate * 1));
-    this.noiseBuffer = this.audioContext.createBuffer(1, bufferLength, this.audioContext.sampleRate);
+    this.noiseBuffer = this.audioContext.createBuffer(
+      1,
+      bufferLength,
+      this.audioContext.sampleRate,
+    );
     const channelData = this.noiseBuffer.getChannelData(0);
     for (let index = 0; index < channelData.length; index += 1) {
       channelData[index] = Math.random() * 2 - 1;
@@ -292,7 +352,7 @@ export class MusicEngine {
     }
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
-    oscillator.type = "sine";
+    oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(160, startTimeSeconds);
     oscillator.frequency.exponentialRampToValueAtTime(44, startTimeSeconds + 0.09);
     gainNode.gain.setValueAtTime(volume, startTimeSeconds);
@@ -308,7 +368,7 @@ export class MusicEngine {
     this.playNoise({
       startTimeSeconds,
       durationSeconds: 0.13,
-      filterType: "bandpass",
+      filterType: 'bandpass',
       filterFrequency: 1900,
       filterQuality: 0.7,
       volume: 0.3,
@@ -318,7 +378,7 @@ export class MusicEngine {
     }
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
-    oscillator.type = "triangle";
+    oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(195, startTimeSeconds);
     gainNode.gain.setValueAtTime(0.16, startTimeSeconds);
     gainNode.gain.exponentialRampToValueAtTime(0.001, startTimeSeconds + 0.08);
@@ -332,7 +392,7 @@ export class MusicEngine {
     this.playNoise({
       startTimeSeconds,
       durationSeconds,
-      filterType: "highpass",
+      filterType: 'highpass',
       filterFrequency: 7500,
       filterQuality: 0.7,
       volume,
@@ -377,10 +437,10 @@ export class MusicEngine {
     // Picked bass: a sawtooth through a low lowpass, with a fast attack
     // and a short pluck decay on every eighth note root.
     const oscillator = this.audioContext.createOscillator();
-    oscillator.type = "sawtooth";
+    oscillator.type = 'sawtooth';
     oscillator.frequency.setValueAtTime(midiNoteToFrequency(rootMidiNote), startTimeSeconds);
     const filterNode = this.audioContext.createBiquadFilter();
-    filterNode.type = "lowpass";
+    filterNode.type = 'lowpass';
     filterNode.frequency.setValueAtTime(900, startTimeSeconds);
     filterNode.frequency.exponentialRampToValueAtTime(320, startTimeSeconds + 0.14);
     const gainNode = this.audioContext.createGain();
@@ -411,7 +471,7 @@ export class MusicEngine {
     for (const semitoneOffset of powerChordSemitoneOffsets) {
       const frequency = midiNoteToFrequency(parameters.chordRootMidiNote + semitoneOffset);
       const filterNode = this.audioContext.createBiquadFilter();
-      filterNode.type = "lowpass";
+      filterNode.type = 'lowpass';
       filterNode.frequency.value = parameters.lowpassFrequency;
       const gainNode = this.audioContext.createGain();
       gainNode.gain.setValueAtTime(parameters.volume, parameters.startTimeSeconds);
@@ -420,7 +480,7 @@ export class MusicEngine {
       gainNode.connect(this.rhythmDistortionNode);
       for (const detuneCents of [-9, 0, 9]) {
         const oscillator = this.audioContext.createOscillator();
-        oscillator.type = "sawtooth";
+        oscillator.type = 'sawtooth';
         oscillator.frequency.setValueAtTime(frequency, parameters.startTimeSeconds);
         oscillator.detune.value = detuneCents;
         oscillator.connect(filterNode);
@@ -445,15 +505,18 @@ export class MusicEngine {
     const frequency = midiNoteToFrequency(parameters.midiNote);
     const endTimeSeconds = parameters.startTimeSeconds + parameters.durationSeconds;
     const filterNode = this.audioContext.createBiquadFilter();
-    filterNode.type = "lowpass";
+    filterNode.type = 'lowpass';
     filterNode.frequency.value = 5200;
     const gainNode = this.audioContext.createGain();
     gainNode.gain.setValueAtTime(0.055, parameters.startTimeSeconds);
-    gainNode.gain.setValueAtTime(0.05, endTimeSeconds - Math.min(0.05, parameters.durationSeconds / 3));
+    gainNode.gain.setValueAtTime(
+      0.05,
+      endTimeSeconds - Math.min(0.05, parameters.durationSeconds / 3),
+    );
     gainNode.gain.exponentialRampToValueAtTime(0.001, endTimeSeconds);
     filterNode.connect(gainNode);
     gainNode.connect(this.musicGainNode);
-    for (const waveform of ["square", "sawtooth"] as const) {
+    for (const waveform of ['square', 'sawtooth'] as const) {
       const oscillator = this.audioContext.createOscillator();
       oscillator.type = waveform;
       oscillator.frequency.setValueAtTime(frequency, parameters.startTimeSeconds);

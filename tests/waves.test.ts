@@ -25,7 +25,9 @@ describe('buildWave', () => {
     const groundKinds = ['tank', 'flak-site'];
     expect(buildWave(1).groups.every((group) => !groundKinds.includes(group.kind))).toBe(true);
     for (const waveNumber of [2, 3, 4]) {
-      expect(buildWave(waveNumber).groups.some((group) => groundKinds.includes(group.kind))).toBe(true);
+      expect(buildWave(waveNumber).groups.some((group) => groundKinds.includes(group.kind))).toBe(
+        true,
+      );
     }
   });
 });

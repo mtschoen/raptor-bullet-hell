@@ -8,7 +8,8 @@ export interface Vec2 {
 
 export type Faction = 'allies' | 'axis';
 
-export type EnemyKind = 'fighter' | 'dive-bomber' | 'ace' | 'flak-barge' | 'boss' | 'tank' | 'flak-site';
+export type EnemyKind =
+  'fighter' | 'dive-bomber' | 'ace' | 'flak-barge' | 'boss' | 'tank' | 'flak-site';
 
 export type Altitude = 'air' | 'ground';
 

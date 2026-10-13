@@ -1,8 +1,16 @@
 import type { Vec2 } from '../game/types';
 
 export interface InputEventTarget {
-  addEventListener(type: string, listener: EventListener, options?: boolean | AddEventListenerOptions): void;
-  removeEventListener(type: string, listener: EventListener, options?: boolean | EventListenerOptions): void;
+  addEventListener(
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+  removeEventListener(
+    type: string,
+    listener: EventListener,
+    options?: boolean | EventListenerOptions,
+  ): void;
 }
 
 const GAME_CODES = new Set([

@@ -45,11 +45,7 @@ export class ParallaxField {
   private readonly items: StarfieldItem[] = [];
   private readonly layerDefinitions: readonly StarfieldLayerDefinition[];
 
-  constructor(
-    width = 480,
-    height = 720,
-    options: ParallaxFieldOptions = {},
-  ) {
+  constructor(width = 480, height = 720, options: ParallaxFieldOptions = {}) {
     this.width = Math.max(1, width);
     this.height = Math.max(1, height);
     this.layerDefinitions = options.layers ?? defaultLayers;

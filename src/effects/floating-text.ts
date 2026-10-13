@@ -89,10 +89,7 @@ export class FloatingTextPool {
         continue;
       }
       slot.y -= slot.riseSpeed * deltaSeconds;
-      slot.alpha = Math.min(
-        1,
-        Math.max(0, slot.remainingLifeSeconds / slot.lifeSeconds),
-      );
+      slot.alpha = Math.min(1, Math.max(0, slot.remainingLifeSeconds / slot.lifeSeconds));
     }
   }
 

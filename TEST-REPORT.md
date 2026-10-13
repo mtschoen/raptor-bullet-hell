@@ -1,20 +1,21 @@
 # raptor-bullet-hell - Test Report
 
-`2026-10-12T20:17:21`
+`2026-10-13T06:55:24Z`
 
-| Field | Value |
-|-------|-------|
-| **Status** | PASS |
-| **Mode** | best-effort |
-| **Tests** | `11` total (`11` passed, `0` failed, `0` skipped) |
-| **Git** | `none` (not a git checkout) |
-| **Coverage** | `4.88%` statements overall; tested pure modules: waves 100% statements/branches/functions/lines, particles 59.7% lines, patterns 51.2% lines, collision 33.3% lines; Canvas, audio, input, and game-loop glue uncovered (browser-level tests not yet present) |
-| **Lint** | `eslint` and `prettier` scripts declared but tools not installed; `tsc --noEmit` strict check passes as part of `npm run build` |
+| Field        | Value                                                                                                                                                                                                                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**   | PASS                                                                                                                                                                                                                                                                                                  |
+| **Mode**     | best-effort                                                                                                                                                                                                                                                                                           |
+| **Tests**    | `13` total (`13` passed, `0` failed, `0` skipped)                                                                                                                                                                                                                                                     |
+| **Git**      | `60234ad` (main) plus uncommitted publish changes                                                                                                                                                                                                                                                     |
+| **Coverage** | 4.1% statements, 3.21% branches, 4.82% functions, 4.13% lines overall; waves 100%, particles 59.7% lines, patterns 51.2% lines, collision 33.3% lines; baseline held, Canvas/audio/input/render glue uncovered (pre-existing); `tools/*.py` asset scripts not covered (manual pipeline, pre-existing) |
+| **Lint**     | `eslint`: `0` findings (`0` errors, `0` warnings); `prettier`: `0` findings (format check passes); `0` per-case suppressions, `0` documented exceptions                                                                                                                                               |
 
 ## Commands
 
 ```bash
-npm test
+npm run lint
+npm run format:check
 npm run coverage
-npm run build
+npm run build:pages
 ```
