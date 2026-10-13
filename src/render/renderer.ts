@@ -138,34 +138,93 @@ export class Renderer {
     context.stroke();
   }
   private backgroundImageCache = new Map<string, HTMLImageElement>();
-  private backgroundPatternCache = new Map<string, CanvasPattern>();
-  private backgroundPattern(name: string, scroll: number): CanvasPattern | null {
+  private createTrackedImage(source: string): HTMLImageElement {
+    const image = new Image();
+    image.src = source;
+    // Ask the browser to decode promptly and keep the decoded surface warm.
+    // Firefox on Android discards decoded images more aggressively than
+    // Chrome, which can leave drawImage calls drawing nothing for a while.
+    if (typeof image.decode === 'function') {
+      void image.decode().catch(() => undefined);
+    }
+    return image;
+  }
+  private backgroundImage(name: string): HTMLImageElement | null {
     let image = this.backgroundImageCache.get(name);
     if (image === undefined) {
-      image = new Image();
-      image.src = `backgrounds/${name}.jpg?v=${ASSET_URL_VERSION}`;
+      image = this.createTrackedImage(`backgrounds/${name}.jpg?v=${ASSET_URL_VERSION}`);
       this.backgroundImageCache.set(name, image);
     }
     if (!image.complete || image.naturalWidth === 0) return null;
-    let pattern = this.backgroundPatternCache.get(name);
-    if (pattern === undefined) {
-      const createdPattern = this.context.createPattern(image, 'repeat');
-      if (createdPattern === null) return null;
-      pattern = createdPattern;
-      this.backgroundPatternCache.set(name, pattern);
+    return image;
+  }
+  private tileOffset(scroll: number): number {
+    return ((Math.round(scroll) % 512) + 512) % 512;
+  }
+  // Terrain is tiled with plain drawImage instead of CanvasPattern. Gecko on
+  // Android corrupts pattern-filled textures under texture-cache pressure
+  // (wrong textures in fills, missing sprites), while drawImage of the same
+  // images stays correct. Offsets match the old pattern alignment exactly.
+  private drawTiled(image: HTMLImageElement, scroll: number): void {
+    const offset = this.tileOffset(scroll);
+    for (const tileX of [-512, 0]) {
+      for (let tileY = offset - 512; tileY < PLAY_FIELD_HEIGHT + 40; tileY += 512) {
+        this.context.drawImage(image, tileX, tileY);
+      }
     }
-    // Whole-pixel offsets only: fractional pattern transforms crawl and
-    // flicker on mobile GPU rasterizers.
-    const offset = ((Math.round(scroll) % 512) + 512) % 512;
-    pattern.setTransform(new DOMMatrix().translate(0, offset));
-    return pattern;
+  }
+  private fillCurrentPathWithTile(name: string, scroll: number, fallback: CanvasGradient): void {
+    const context = this.context;
+    const image = this.backgroundImage(name);
+    if (image === null) {
+      context.fillStyle = fallback;
+      context.fill();
+      return;
+    }
+    context.save();
+    context.clip();
+    this.drawTiled(image, scroll);
+    context.restore();
+  }
+  private drawTextureCell(
+    image: HTMLImageElement,
+    screenX: number,
+    screenY: number,
+    size: number,
+    scroll: number,
+  ): void {
+    const offset = this.tileOffset(scroll);
+    const startSourceX = ((screenX % 512) + 512) % 512;
+    const startSourceY = (((screenY - offset) % 512) + 512) % 512;
+    let drawnY = 0;
+    while (drawnY < size) {
+      const sourceY = (startSourceY + drawnY) % 512;
+      const segmentHeight = Math.min(size - drawnY, 512 - sourceY);
+      let drawnX = 0;
+      while (drawnX < size) {
+        const sourceX = (startSourceX + drawnX) % 512;
+        const segmentWidth = Math.min(size - drawnX, 512 - sourceX);
+        this.context.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          segmentWidth,
+          segmentHeight,
+          screenX + drawnX,
+          screenY + drawnY,
+          segmentWidth,
+          segmentHeight,
+        );
+        drawnX += segmentWidth;
+      }
+      drawnY += segmentHeight;
+    }
   }
   private diffusionImageCache = new Map<string, HTMLImageElement>();
   private blitDiffusion(name: string, displayWidth: number, flipped: boolean): boolean {
     let image = this.diffusionImageCache.get(name);
     if (image === undefined) {
-      image = new Image();
-      image.src = `sprites/${name}.png?v=${ASSET_URL_VERSION}`;
+      image = this.createTrackedImage(`sprites/${name}.png?v=${ASSET_URL_VERSION}`);
       this.diffusionImageCache.set(name, image);
     }
     if (!image.complete || image.naturalWidth === 0) return false;
@@ -201,8 +260,12 @@ export class Renderer {
     landGradient.addColorStop(0, '#5d703c');
     landGradient.addColorStop(0.5, '#66743e');
     landGradient.addColorStop(1, '#55683a');
-    context.fillStyle = this.backgroundPattern('fields', scroll) ?? landGradient;
-    context.fillRect(-20, -20, PLAY_FIELD_WIDTH + 40, PLAY_FIELD_HEIGHT + 40);
+    const fieldsImage = this.backgroundImage('fields');
+    if (fieldsImage !== null) this.drawTiled(fieldsImage, scroll);
+    else {
+      context.fillStyle = landGradient;
+      context.fillRect(-20, -20, PLAY_FIELD_WIDTH + 40, PLAY_FIELD_HEIGHT + 40);
+    }
     this.drawWorldLockedLandTexture(scroll);
     const coastStep = 20;
     // Beach rim: channel widened toward the water, sampled from worldY.
@@ -225,7 +288,6 @@ export class Renderer {
     waterGradient.addColorStop(0, '#155e75');
     waterGradient.addColorStop(0.45, '#0b4f6e');
     waterGradient.addColorStop(1, '#082f49');
-    context.fillStyle = this.backgroundPattern('water', scroll) ?? waterGradient;
     context.beginPath();
     for (let screenY = -coastStep; screenY <= PLAY_FIELD_HEIGHT + coastStep; screenY += coastStep) {
       const worldY = screenY - scroll;
@@ -238,7 +300,7 @@ export class Renderer {
       context.lineTo(channelCenterAt(worldY) + channelHalfWidthAt(worldY), screenY);
     }
     context.closePath();
-    context.fill();
+    this.fillCurrentPathWithTile('water', scroll, waterGradient);
     this.drawWorldLockedRoad(scroll);
     // Foam flecks hugging both coasts, seeded in world space.
     for (let screenY = 0; screenY <= PLAY_FIELD_HEIGHT; screenY += 24) {
@@ -342,12 +404,11 @@ export class Renderer {
         const jitterX = seededValue(cellSeed, 602) * 18 - 9;
         const jitterY = seededValue(cellSeed, 603) * 18 - 9;
         if (textureKind < 0.42) {
-          const junglePattern = this.backgroundPattern('jungle', scroll);
-          if (junglePattern !== null) {
+          const jungleImage = this.backgroundImage('jungle');
+          if (jungleImage !== null) {
             this.context.save();
             this.context.globalAlpha = 0.88;
-            this.context.fillStyle = junglePattern;
-            this.context.fillRect(screenX, screenY, cellSize, cellSize);
+            this.drawTextureCell(jungleImage, screenX, screenY, cellSize, scroll);
             this.context.restore();
           }
           this.circle(
@@ -368,7 +429,7 @@ export class Renderer {
             seededValue(cellSeed, 606) < 0.5
               ? 'rgba(178, 156, 92, 0.7)'
               : 'rgba(112, 128, 62, 0.7)';
-          if (this.backgroundPattern('fields', scroll) === null)
+          if (this.backgroundImage('fields') === null)
             this.rect(screenX + 3, screenY + 3, cellSize - 6, cellSize - 6, fieldFill);
           this.line(
             screenX + 6,
