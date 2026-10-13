@@ -92,6 +92,20 @@ export class Renderer {
     const context = this.context; context.strokeStyle = stroke; context.lineWidth = width;
     context.beginPath(); context.moveTo(x1, y1); context.lineTo(x2, y2); context.stroke();
   }
+  private backgroundImageCache = new Map<string, HTMLImageElement>();
+  private backgroundPattern(name: string, scroll: number): CanvasPattern | null {
+    let image = this.backgroundImageCache.get(name);
+    if (image === undefined) {
+      image = new Image();
+      image.src = `backgrounds/${name}.jpg`;
+      this.backgroundImageCache.set(name, image);
+    }
+    if (!image.complete || image.naturalWidth === 0) return null;
+    const pattern = this.context.createPattern(image, 'repeat');
+    if (pattern === null) return null;
+    pattern.setTransform(new DOMMatrix().translate(0, scroll % 512));
+    return pattern;
+  }
   private diffusionImageCache = new Map<string, HTMLImageElement>();
   private blitDiffusion(name: string, displayWidth: number, flipped: boolean): boolean {
     let image = this.diffusionImageCache.get(name);
@@ -122,7 +136,7 @@ export class Renderer {
     // Land is the continuous base on both sides of the channel.
     const landGradient = context.createLinearGradient(0, 0, PLAY_FIELD_WIDTH, 0);
     landGradient.addColorStop(0, '#5d703c'); landGradient.addColorStop(0.5, '#66743e'); landGradient.addColorStop(1, '#55683a');
-    context.fillStyle = landGradient; context.fillRect(-20, -20, PLAY_FIELD_WIDTH + 40, PLAY_FIELD_HEIGHT + 40);
+    context.fillStyle = this.backgroundPattern('fields', scroll) ?? landGradient; context.fillRect(-20, -20, PLAY_FIELD_WIDTH + 40, PLAY_FIELD_HEIGHT + 40);
     this.drawWorldLockedLandTexture(scroll);
     const coastStep = 20;
     // Beach rim: channel widened toward the water, sampled from worldY.
@@ -140,7 +154,7 @@ export class Renderer {
     // Water channel only, following the same continuous coast.
     const waterGradient = context.createLinearGradient(0, 0, 0, PLAY_FIELD_HEIGHT);
     waterGradient.addColorStop(0, '#155e75'); waterGradient.addColorStop(0.45, '#0b4f6e'); waterGradient.addColorStop(1, '#082f49');
-    context.fillStyle = waterGradient; context.beginPath();
+    context.fillStyle = this.backgroundPattern('water', scroll) ?? waterGradient; context.beginPath();
     for (let screenY = -coastStep; screenY <= PLAY_FIELD_HEIGHT + coastStep; screenY += coastStep) {
       const worldY = screenY - scroll;
       const edgeX = channelCenterAt(worldY) - channelHalfWidthAt(worldY);
@@ -209,12 +223,12 @@ export class Renderer {
         const jitterX = seededValue(cellSeed, 602) * 18 - 9;
         const jitterY = seededValue(cellSeed, 603) * 18 - 9;
         if (textureKind < 0.42) {
-          this.circle(screenX + 16 + jitterX, screenY + 16 + jitterY, 8 + seededValue(cellSeed, 604) * 6, 'rgba(30, 74, 28, 0.8)');
+          const junglePattern = this.backgroundPattern('jungle', scroll); if (junglePattern !== null) { this.context.save(); this.context.globalAlpha = 0.88; this.context.fillStyle = junglePattern; this.context.fillRect(screenX, screenY, cellSize, cellSize); this.context.restore(); } this.circle(screenX + 16 + jitterX, screenY + 16 + jitterY, 8 + seededValue(cellSeed, 604) * 6, 'rgba(30, 74, 28, 0.8)');
           this.circle(screenX + 27 + jitterX, screenY + 22 + jitterY, 6 + seededValue(cellSeed, 605) * 5, 'rgba(52, 110, 38, 0.8)');
           this.circle(screenX + 11 + jitterX, screenY + 27 + jitterY, 5, 'rgba(96, 150, 58, 0.75)');
         } else if (textureKind < 0.78) {
           const fieldFill = seededValue(cellSeed, 606) < 0.5 ? 'rgba(178, 156, 92, 0.7)' : 'rgba(112, 128, 62, 0.7)';
-          this.rect(screenX + 3, screenY + 3, cellSize - 6, cellSize - 6, fieldFill);
+          if (this.backgroundPattern('fields', scroll) === null) this.rect(screenX + 3, screenY + 3, cellSize - 6, cellSize - 6, fieldFill);
           this.line(screenX + 6, screenY + 16, screenX + cellSize - 6, screenY + 16, 'rgba(52, 58, 30, 0.3)', 0.8);
           this.line(screenX + 6, screenY + 30, screenX + cellSize - 6, screenY + 30, 'rgba(52, 58, 30, 0.3)', 0.8);
         }

@@ -50,5 +50,8 @@ Reusable systems, each independently testable:
 Aircraft, tank, and flak sprites in `public/sprites/` were generated with
 Google Imagen (via Antigravity) in a gritty pre-rendered style, then keyed and
 downscaled by `tools/process-sprites.py` (run with the project `.venv` Python);
-the renderer falls back to code-drawn sprites while images load. Terrain is
-drawn in code and all sound is synthesized with Web Audio.
+the renderer falls back to code-drawn sprites while images load. Terrain uses
+Imagen-generated jungle, farmland, and water tiles in `public/backgrounds/`
+(processed by `tools/process-backgrounds.py`) in a pale palette chosen so dark
+aircraft stand out, with code-drawn coasts and roads on top. All sound is
+synthesized with Web Audio.
