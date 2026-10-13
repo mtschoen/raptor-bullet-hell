@@ -28,10 +28,11 @@ invulnerability, press Shift to bomb, reach wave 5 for the boss, die three
 times for game over, then Enter to restart.
 
 On a touch device (or with coarse-pointer emulation at a phone size): start
-a mission and confirm the D-pad, FIRE, and BOMB deck appears at the bottom;
-hold FIRE and confirm the jet fires, hold two directions at once and confirm
-diagonal flight, tap BOMB and confirm the bomb fires once, then pause and
-confirm the deck hides.
+a mission and confirm the stick and A/B deck appears at the bottom; touch
+the stick zone and confirm the knob jumps to your thumb and the jet steers
+immediately, push farther and confirm it flies faster, hold A and confirm
+the jet fires, tap B and confirm the bomb fires once, then pause and confirm
+the deck hides.
 
 ## Setup
 

@@ -66,7 +66,7 @@ function boot(): void {
   const startText = createElement(
     'p',
     '',
-    'Pilot the Allied jet through Axis waves, a tribute to Raptor: Call of the Shadows. Move with arrow keys or WASD, fire with Space, bomb with Shift, pause with P or Esc. On a phone, steer with the D-pad and hold FIRE.',
+    'Pilot the Allied jet through Axis waves, a tribute to Raptor: Call of the Shadows. Move with arrow keys or WASD, fire with Space, bomb with Shift, pause with P or Esc. On a phone, steer with the stick and hold A to fire.',
   );
   const startButton = createElement('button', 'primary-button', 'Start Mission');
   startButton.type = 'button';
@@ -101,15 +101,19 @@ function boot(): void {
   const helpText = createElement(
     'p',
     'help-text',
-    'Keyboard: arrows or WASD move, Space fires, Shift drops a bomb, P or Esc pauses. Touch: steer with the D-pad, hold FIRE, tap BOMB. Collect S, M, R, shield and bomb pickups.',
+    'Keyboard: arrows or WASD move, Space fires, Shift drops a bomb, P or Esc pauses. Touch: steer with the stick, hold A to fire, tap B to bomb. Collect S, M, R, shield and bomb pickups.',
   );
 
   const touchDeck = createElement('div', 'touch-deck');
   touchDeck.setAttribute('role', 'group');
   touchDeck.setAttribute('aria-label', 'Touch controls');
-  const directionPad = createElement('div', 'touch-direction-pad');
-  directionPad.setAttribute('role', 'group');
-  directionPad.setAttribute('aria-label', 'Movement');
+  const stickZone = createElement('div', 'touch-stick-zone');
+  stickZone.setAttribute('role', 'group');
+  stickZone.setAttribute('aria-label', 'Steering stick');
+  const stickBase = createElement('div', 'touch-stick-base');
+  const stickKnob = createElement('div', 'touch-stick-knob');
+  stickBase.append(stickKnob);
+  stickZone.append(stickBase);
   const actionPad = createElement('div', 'touch-action-pad');
   actionPad.setAttribute('role', 'group');
   actionPad.setAttribute('aria-label', 'Weapons');
@@ -117,41 +121,84 @@ function boot(): void {
   function buildTouchButton(
     control: TouchControl,
     label: string,
-    svgPath: string | null,
-    text = '',
+    text: string,
+    caption: string,
   ): HTMLButtonElement {
-    const button = createElement('button', 'touch-button', text);
+    const button = createElement('button', 'touch-button');
     button.type = 'button';
     button.dataset.touchControl = control;
     button.setAttribute('aria-label', label);
-    if (svgPath !== null) {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', '0 0 24 24');
-      svg.setAttribute('aria-hidden', 'true');
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', svgPath);
-      svg.append(path);
-      button.append(svg);
-    }
+    const letter = createElement('span', 'touch-button-letter', text);
+    const captionElement = createElement('small', 'touch-button-caption', caption);
+    button.append(letter, captionElement);
     return button;
   }
 
-  const upButton = buildTouchButton('up', 'Move up', 'M12 5l7 10H5z');
-  const leftButton = buildTouchButton('left', 'Move left', 'M5 12l10-7v14z');
-  const rightButton = buildTouchButton('right', 'Move right', 'M19 12L9 5v14z');
-  const downButton = buildTouchButton('down', 'Move down', 'M12 19L5 9h14z');
-  const fireButton = buildTouchButton('fire', 'Fire, hold to keep firing', null, 'FIRE');
-  const bombButton = buildTouchButton('bomb', 'Drop bomb', null, 'BOMB');
-  const touchButtons = [upButton, leftButton, rightButton, downButton, fireButton, bombButton];
-  directionPad.append(upButton, leftButton, rightButton, downButton);
+  const fireButton = buildTouchButton('fire', 'A: fire, hold to keep firing', 'A', 'FIRE');
+  const bombButton = buildTouchButton('bomb', 'B: drop bomb', 'B', 'BOMB');
+  const touchButtons = [fireButton, bombButton];
   actionPad.append(fireButton, bombButton);
-  touchDeck.append(directionPad, actionPad);
+  touchDeck.append(stickZone, actionPad);
 
   cabinet.append(header, hudBar, stageFrame, controlsBar, helpText, touchDeck);
   application.replaceChildren(cabinet);
 
   const touchPointers = new Map<number, TouchControl>();
-  const touchControls: TouchControl[] = ['left', 'right', 'up', 'down', 'fire', 'bomb'];
+  const touchControls: TouchControl[] = ['fire', 'bomb'];
+  let stickPointerIdentifier: number | null = null;
+
+  function engageStick(clientX: number, clientY: number): void {
+    const baseRectangle = stickBase.getBoundingClientRect();
+    const radius = Math.max(1, baseRectangle.width / 2);
+    const centerX = baseRectangle.left + radius;
+    const centerY = baseRectangle.top + radius;
+    let steeringX = (clientX - centerX) / radius;
+    let steeringY = (clientY - centerY) / radius;
+    const magnitude = Math.hypot(steeringX, steeringY);
+    if (magnitude > 1) {
+      steeringX /= magnitude;
+      steeringY /= magnitude;
+    }
+    const knobTravel = Math.max(0, radius - 27);
+    stickKnob.style.transform = `translate(calc(-50% + ${steeringX * knobTravel}px), calc(-50% + ${steeringY * knobTravel}px))`;
+    input.setTouchSteering(steeringX, steeringY);
+  }
+
+  function releaseStick(pointerIdentifier: number): void {
+    if (stickPointerIdentifier !== pointerIdentifier) return;
+    stickPointerIdentifier = null;
+    stickKnob.style.transform = '';
+    stickBase.classList.remove('is-engaged');
+    input.clearTouchSteering();
+  }
+
+  function clearStick(): void {
+    stickPointerIdentifier = null;
+    stickKnob.style.transform = '';
+    stickBase.classList.remove('is-engaged');
+    input.clearTouchSteering();
+  }
+
+  stickZone.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    audioEngine.handleUserGesture();
+    if (event.button > 0 || stickPointerIdentifier !== null) return;
+    stickPointerIdentifier = event.pointerId;
+    try {
+      stickZone.setPointerCapture(event.pointerId);
+    } catch {
+      /* capture is a nicety, the release handlers still run */
+    }
+    stickBase.classList.add('is-engaged');
+    engageStick(event.clientX, event.clientY);
+  });
+  stickZone.addEventListener('pointermove', (event) => {
+    if (stickPointerIdentifier !== event.pointerId) return;
+    engageStick(event.clientX, event.clientY);
+  });
+  stickZone.addEventListener('pointerup', (event) => releaseStick(event.pointerId));
+  stickZone.addEventListener('pointercancel', (event) => releaseStick(event.pointerId));
+  stickZone.addEventListener('lostpointercapture', (event) => releaseStick(event.pointerId));
 
   function releaseTouchPointer(pointerId: number): void {
     const control = touchPointers.get(pointerId);
@@ -167,6 +214,7 @@ function boot(): void {
 
   function clearTouchButtons(): void {
     touchPointers.clear();
+    clearStick();
     for (const control of touchControls) input.touchButtonUp(control);
     for (const button of touchButtons) button.classList.remove('is-held');
   }

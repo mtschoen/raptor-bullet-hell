@@ -243,65 +243,87 @@ canvas.game-canvas {
   .cabinet.is-playing .stage-frame {
     max-height: max(230px, calc(100dvh - 352px));
   }
-  .touch-direction-pad {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .touch-action-pad {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 8px;
-  }
-  .touch-button {
+  .touch-stick-zone {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    min-height: 124px;
+    touch-action: none;
+  }
+  .touch-stick-base {
+    position: relative;
+    width: 118px;
+    height: 118px;
+    flex: none;
+    border: 2px solid #334155;
+    border-radius: 50%;
+    background: #0d1626;
+    box-shadow: inset 0 0 0 6px #0b1220;
+  }
+  .touch-stick-base.is-engaged {
+    border-color: #67e8f9;
+  }
+  .touch-stick-knob {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 54px;
+    height: 54px;
+    border: 1px solid #64748b;
+    border-radius: 50%;
+    background: #1e293b;
+    box-shadow: 0 3px 0 #020617;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .touch-action-pad {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    min-height: 124px;
+  }
+  .touch-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 66px;
+    height: 66px;
     min-width: 44px;
-    min-height: 48px;
+    min-height: 44px;
     border: 1px solid #334155;
-    border-radius: 10px;
+    border-radius: 50%;
     background: #111c2e;
     color: #e2e8f0;
     font-weight: 900;
-    letter-spacing: 0.08em;
     touch-action: none;
     box-shadow: 0 3px 0 #020617;
   }
-  .touch-button svg {
-    width: 26px;
-    height: 26px;
-    fill: currentColor;
+  .touch-button-letter {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .touch-button-caption {
+    font-size: 0.52rem;
+    letter-spacing: 0.14em;
   }
   .touch-button.is-held {
     background: #164e63;
     border-color: #67e8f9;
     color: #ecfeff;
   }
-  .touch-button[data-touch-control='left'] {
-    grid-column: 1;
-    grid-row: 1 / -1;
-  }
-  .touch-button[data-touch-control='right'] {
-    grid-column: 3;
-    grid-row: 1 / -1;
-  }
-  .touch-button[data-touch-control='up'] {
+  .touch-button[data-touch-control='fire'] {
     grid-column: 2;
     grid-row: 1;
-  }
-  .touch-button[data-touch-control='down'] {
-    grid-column: 2;
-    grid-row: 2;
-  }
-  .touch-button[data-touch-control='fire'] {
+    align-self: start;
+    justify-self: end;
+    width: 72px;
+    height: 72px;
     background: #7f1d1d;
     border-color: #f87171;
     color: #fee2e2;
-    font-size: 1.05rem;
   }
   .touch-button[data-touch-control='fire'].is-held {
     background: #b91c1c;
@@ -309,16 +331,19 @@ canvas.game-canvas {
     color: #ffffff;
   }
   .touch-button[data-touch-control='bomb'] {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: end;
+    justify-self: start;
     color: #fde68a;
-    font-size: 0.78rem;
   }
 }
 @media (pointer: coarse) and (max-width: 340px) {
   .touch-deck.is-visible {
     gap: 12px;
   }
-  .touch-direction-pad,
-  .touch-action-pad {
-    gap: 6px;
+  .touch-stick-base {
+    width: 104px;
+    height: 104px;
   }
 }

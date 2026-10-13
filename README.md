@@ -11,17 +11,19 @@ in your browser. No installation or account required.
 
 ## Play
 
-- Move: Arrow keys or WASD; on a phone, hold the on-screen D-pad (hold two
-  directions at once to fly diagonally)
-- Fire: Hold Space, or hold the FIRE button (weapons upgrade from drops:
-  spread, missiles, rail)
-- Bomb: Shift, or tap BOMB (clears enemy bullets and damages everything on
+- Move: Arrow keys or WASD; on a phone, push the on-screen stick (tilt
+  farther to fly faster)
+- Fire: Hold Space, or hold A (weapons upgrade from drops: spread, missiles,
+  rail)
+- Bomb: Shift, or tap B (clears enemy bullets and damages everything on
   screen)
 - Pause: P or Esc, Mute: M, Start or restart: Enter or the on-screen buttons
 
-On touch devices a control deck (D-pad, FIRE, and BOMB) appears at the bottom
-of the screen while a mission is playing and hides again on the title, pause,
-and game-over screens.
+On touch devices a control deck appears at the bottom of the screen while a
+mission is playing and hides again on the title, pause, and game-over
+screens. The stick sits on the left: the knob jumps straight to your thumb
+when it lands, so steering starts the instant you touch down. Round A (fire)
+and B (bomb) buttons sit on the right in Game Boy diagonal placement.
 
 Score builds a combo multiplier. Power-ups drop from wreckage: weapon upgrades,
 shield, and extra bombs. Three lives, brief invulnerability after each hit.

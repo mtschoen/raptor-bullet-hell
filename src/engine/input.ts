@@ -29,12 +29,18 @@ const GAME_CODES = new Set([
   'Escape',
 ]);
 
-export type TouchControl = 'left' | 'right' | 'up' | 'down' | 'fire' | 'bomb';
+export type TouchControl = 'fire' | 'bomb';
+
+const TOUCH_STEERING_DEAD_ZONE = 0.12;
+
+function clampSteering(value: number): number {
+  return Math.min(1, Math.max(-1, value));
+}
 
 export class InputState {
   private attachedTarget: InputEventTarget | null = null;
   private pressedCodes = new Set<string>();
-  private touchDirections = new Set<TouchControl>();
+  private touchSteeringVector: Vec2 = { x: 0, y: 0 };
   private touchFiring = false;
   private touchBombIsHeld = false;
   private pendingBombPressed = false;
@@ -73,9 +79,22 @@ export class InputState {
   };
 
   private clearTouchButtons(): void {
-    this.touchDirections.clear();
+    this.clearTouchSteering();
     this.touchFiring = false;
     this.touchBombIsHeld = false;
+  }
+
+  setTouchSteering(x: number, y: number): void {
+    const magnitude = Math.hypot(x, y);
+    if (!Number.isFinite(magnitude) || magnitude < TOUCH_STEERING_DEAD_ZONE) {
+      this.touchSteeringVector = { x: 0, y: 0 };
+      return;
+    }
+    this.touchSteeringVector = { x: clampSteering(x), y: clampSteering(y) };
+  }
+
+  clearTouchSteering(): void {
+    this.touchSteeringVector = { x: 0, y: 0 };
   }
 
   touchButtonDown(control: TouchControl): void {
@@ -83,14 +102,10 @@ export class InputState {
       this.touchFiring = true;
       return;
     }
-    if (control === 'bomb') {
-      if (!this.touchBombIsHeld) {
-        this.touchBombIsHeld = true;
-        this.pendingBombPressed = true;
-      }
-      return;
+    if (!this.touchBombIsHeld) {
+      this.touchBombIsHeld = true;
+      this.pendingBombPressed = true;
     }
-    this.touchDirections.add(control);
   }
 
   touchButtonUp(control: TouchControl): void {
@@ -98,11 +113,7 @@ export class InputState {
       this.touchFiring = false;
       return;
     }
-    if (control === 'bomb') {
-      this.touchBombIsHeld = false;
-      return;
-    }
-    this.touchDirections.delete(control);
+    this.touchBombIsHeld = false;
   }
 
   private handlePointerDown = (event: Event): void => {
@@ -172,35 +183,15 @@ export class InputState {
   }
 
   get axisX(): number {
-    const left =
-      this.pressedCodes.has('ArrowLeft') ||
-      this.pressedCodes.has('KeyA') ||
-      this.touchDirections.has('left')
-        ? 1
-        : 0;
-    const right =
-      this.pressedCodes.has('ArrowRight') ||
-      this.pressedCodes.has('KeyD') ||
-      this.touchDirections.has('right')
-        ? 1
-        : 0;
-    return right - left;
+    const left = this.pressedCodes.has('ArrowLeft') || this.pressedCodes.has('KeyA') ? 1 : 0;
+    const right = this.pressedCodes.has('ArrowRight') || this.pressedCodes.has('KeyD') ? 1 : 0;
+    return clampSteering(right - left + this.touchSteeringVector.x);
   }
 
   get axisY(): number {
-    const up =
-      this.pressedCodes.has('ArrowUp') ||
-      this.pressedCodes.has('KeyW') ||
-      this.touchDirections.has('up')
-        ? 1
-        : 0;
-    const down =
-      this.pressedCodes.has('ArrowDown') ||
-      this.pressedCodes.has('KeyS') ||
-      this.touchDirections.has('down')
-        ? 1
-        : 0;
-    return down - up;
+    const up = this.pressedCodes.has('ArrowUp') || this.pressedCodes.has('KeyW') ? 1 : 0;
+    const down = this.pressedCodes.has('ArrowDown') || this.pressedCodes.has('KeyS') ? 1 : 0;
+    return clampSteering(down - up + this.touchSteeringVector.y);
   }
 
   get firing(): boolean {

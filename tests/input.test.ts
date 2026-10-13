@@ -26,30 +26,46 @@ function keyboardEvent(code: string): unknown {
 }
 
 describe('touch controls', () => {
-  it('holding a direction button steers until it is released', () => {
+  it('steers proportionally to stick tilt', () => {
     const input = new InputState();
-    input.touchButtonDown('left');
-    expect(input.axisX).toBe(-1);
-    input.touchButtonUp('left');
-    expect(input.axisX).toBe(0);
+    input.setTouchSteering(0.5, -0.25);
+    expect(input.axisX).toBeCloseTo(0.5);
+    expect(input.axisY).toBeCloseTo(-0.25);
   });
 
-  it('holding two direction buttons flies diagonally and releasing one keeps the other', () => {
+  it('ignores stick tilt inside the dead zone', () => {
     const input = new InputState();
-    input.touchButtonDown('left');
-    input.touchButtonDown('up');
-    expect(input.axisX).toBe(-1);
-    expect(input.axisY).toBe(-1);
-    input.touchButtonUp('left');
+    input.setTouchSteering(0.05, -0.08);
     expect(input.axisX).toBe(0);
+    expect(input.axisY).toBe(0);
+  });
+
+  it('clamps stick tilt beyond full deflection', () => {
+    const input = new InputState();
+    input.setTouchSteering(2, -3);
+    expect(input.axisX).toBe(1);
     expect(input.axisY).toBe(-1);
   });
 
-  it('holding opposing directions cancels steering', () => {
+  it('stops steering when the stick is released', () => {
     const input = new InputState();
-    input.touchButtonDown('left');
-    input.touchButtonDown('right');
+    input.setTouchSteering(-0.75, 0.5);
+    input.clearTouchSteering();
     expect(input.axisX).toBe(0);
+    expect(input.axisY).toBe(0);
+  });
+
+  it('combines keyboard and stick steering without exceeding full speed', () => {
+    const input = new InputState();
+    const target = new FakeEventTarget();
+    input.attach(target);
+    target.dispatch('keydown', keyboardEvent('ArrowRight'));
+    expect(input.axisX).toBe(1);
+    input.setTouchSteering(-0.5, 0);
+    expect(input.axisX).toBeCloseTo(0.5);
+    input.setTouchSteering(0.5, 0);
+    expect(input.axisX).toBe(1);
+    input.detach();
   });
 
   it('holding fire fires until it is released', () => {
@@ -72,24 +88,11 @@ describe('touch controls', () => {
     expect(input.consumeBombPressed()).toBe(true);
   });
 
-  it('combines keyboard and touch steering', () => {
+  it('clears stick and buttons on blur', () => {
     const input = new InputState();
     const target = new FakeEventTarget();
     input.attach(target);
-    target.dispatch('keydown', keyboardEvent('ArrowRight'));
-    expect(input.axisX).toBe(1);
-    input.touchButtonDown('left');
-    expect(input.axisX).toBe(0);
-    input.touchButtonUp('left');
-    expect(input.axisX).toBe(1);
-    input.detach();
-  });
-
-  it('clears held touch buttons on blur', () => {
-    const input = new InputState();
-    const target = new FakeEventTarget();
-    input.attach(target);
-    input.touchButtonDown('left');
+    input.setTouchSteering(-1, 0);
     input.touchButtonDown('fire');
     target.dispatch('blur', {});
     expect(input.axisX).toBe(0);
@@ -97,11 +100,11 @@ describe('touch controls', () => {
     input.detach();
   });
 
-  it('clears held touch buttons on detach', () => {
+  it('clears stick on detach', () => {
     const input = new InputState();
     const target = new FakeEventTarget();
     input.attach(target);
-    input.touchButtonDown('down');
+    input.setTouchSteering(0, 1);
     input.detach();
     expect(input.axisY).toBe(0);
   });
