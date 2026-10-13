@@ -26,6 +26,9 @@ export interface RendererView {
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
+// Art URLs carry the build identifier so a new deploy never mixes fresh code
+// with sprites or terrain cached from a previous release.
+const ASSET_URL_VERSION = __BUILD_IDENTIFIER__;
 function isGroundEnemy(enemy: EnemyShip): boolean {
   return enemy.altitude === 'ground' || enemy.kind === 'tank' || enemy.kind === 'flak-site';
 }
@@ -140,7 +143,7 @@ export class Renderer {
     let image = this.backgroundImageCache.get(name);
     if (image === undefined) {
       image = new Image();
-      image.src = `backgrounds/${name}.jpg`;
+      image.src = `backgrounds/${name}.jpg?v=${ASSET_URL_VERSION}`;
       this.backgroundImageCache.set(name, image);
     }
     if (!image.complete || image.naturalWidth === 0) return null;
@@ -162,7 +165,7 @@ export class Renderer {
     let image = this.diffusionImageCache.get(name);
     if (image === undefined) {
       image = new Image();
-      image.src = `sprites/${name}.png`;
+      image.src = `sprites/${name}.png?v=${ASSET_URL_VERSION}`;
       this.diffusionImageCache.set(name, image);
     }
     if (!image.complete || image.naturalWidth === 0) return false;

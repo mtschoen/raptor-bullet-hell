@@ -223,7 +223,7 @@ canvas.game-canvas {
     inset: auto 0 0;
     z-index: 8;
     display: grid;
-    grid-template-columns: minmax(148px, 3fr) minmax(118px, 2fr);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     align-items: stretch;
     gap: clamp(20px, 6vw, 44px);
     width: min(100%, 560px);
@@ -238,22 +238,22 @@ canvas.game-canvas {
     -webkit-touch-callout: none;
   }
   .cabinet.is-playing {
-    padding-bottom: calc(186px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(234px + env(safe-area-inset-bottom, 0px));
   }
   .cabinet.is-playing .stage-frame {
-    max-height: max(230px, calc(100dvh - 386px));
+    max-height: max(230px, calc(100dvh - 434px));
   }
   .touch-stick-zone {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 158px;
+    min-height: 206px;
     touch-action: none;
   }
   .touch-stick-base {
     position: relative;
-    width: 148px;
-    height: 148px;
+    width: min(196px, 52vw);
+    height: min(196px, 52vw);
     flex: none;
     border: 2px solid #334155;
     border-radius: 50%;
@@ -267,8 +267,8 @@ canvas.game-canvas {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 68px;
-    height: 68px;
+    width: 88px;
+    height: 88px;
     border: 1px solid #64748b;
     border-radius: 50%;
     background: #1e293b;
@@ -281,7 +281,7 @@ canvas.game-canvas {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    min-height: 158px;
+    min-height: 206px;
   }
   .touch-button {
     display: flex;
@@ -319,8 +319,8 @@ canvas.game-canvas {
     grid-row: 1;
     align-self: start;
     justify-self: end;
-    width: 72px;
-    height: 72px;
+    width: 68px;
+    height: 68px;
     background: #7f1d1d;
     border-color: #f87171;
     color: #fee2e2;
@@ -341,9 +341,5 @@ canvas.game-canvas {
 @media (pointer: coarse) and (max-width: 340px) {
   .touch-deck.is-visible {
     gap: 12px;
-  }
-  .touch-stick-base {
-    width: 128px;
-    height: 128px;
   }
 }
