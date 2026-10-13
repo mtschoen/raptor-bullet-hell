@@ -1,0 +1,8 @@
+.agent-lock/
+node_modules/
+dist/
+.venv/
+coverage/
+.claude/
+preview.log
+*.local
