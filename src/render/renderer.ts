@@ -92,6 +92,23 @@ export class Renderer {
     const context = this.context; context.strokeStyle = stroke; context.lineWidth = width;
     context.beginPath(); context.moveTo(x1, y1); context.lineTo(x2, y2); context.stroke();
   }
+  private diffusionImageCache = new Map<string, HTMLImageElement>();
+  private blitDiffusion(name: string, displayWidth: number, flipped: boolean): boolean {
+    let image = this.diffusionImageCache.get(name);
+    if (image === undefined) {
+      image = new Image();
+      image.src = `sprites/${name}.png`;
+      this.diffusionImageCache.set(name, image);
+    }
+    if (!image.complete || image.naturalWidth === 0) return false;
+    const displayHeight = displayWidth * (image.naturalHeight / image.naturalWidth);
+    const context = this.context;
+    context.save();
+    if (flipped) context.rotate(Math.PI);
+    context.drawImage(image, -displayWidth / 2, -displayHeight / 2, displayWidth, displayHeight);
+    context.restore();
+    return true;
+  }
   private blit(kind: SpriteKind, damageHealthFraction = 1): void {
     const sprite = kind === 'boss' ? getBossSprite(damageHealthFraction) : getSprite(kind);
     // Sprite canvases are painted at twice display resolution for finer shading.
@@ -244,7 +261,7 @@ export class Renderer {
     this.poly([-6, 27, 0, 44 + flicker, 6, 27], 'rgba(37, 99, 235, 0.55)');
     this.poly([-4.5, 27, 0, 39 + flicker, 4.5, 27], 'rgba(249, 115, 22, 0.92)');
     this.poly([-2.2, 27, 0, 33 + flicker * 0.6, 2.2, 27], 'rgba(253, 224, 71, 0.97)');
-    this.blit('player');
+    if (!this.blitDiffusion('player', 74, false)) this.blit('player');
     context.restore();
     if (player.shieldActive === true) { context.strokeStyle = 'rgba(103,232,249,0.9)'; context.lineWidth = 2; context.beginPath(); context.arc(player.x, player.y, 27, 0, Math.PI * 2); context.stroke(); }
     context.globalAlpha = 1;
@@ -255,7 +272,8 @@ export class Renderer {
     if (isGroundEnemy(enemy)) {
       this.ellipse(2, 4, enemy.radius * 0.95, enemy.radius * 0.55, 'rgba(20, 26, 12, 0.42)');
       this.ellipse(1, 3, enemy.radius * 0.7, enemy.radius * 0.38, 'rgba(20, 26, 12, 0.30)');
-      this.blit(enemy.kind === 'tank' ? 'tank' : 'flak-site');
+      const groundDrawn = enemy.kind === 'tank' ? this.blitDiffusion('tank', 56, true) : this.blitDiffusion('flak-site', 66, false);
+      if (!groundDrawn) this.blit(enemy.kind === 'tank' ? 'tank' : 'flak-site');
       if (enemy.kind === 'flak-site' && Math.floor(elapsedSeconds * 3) % 2 === 0) this.circle(17, -15, 2.4, '#ef4444');
       if (enemy.kind === 'flak-site' && Math.floor(elapsedSeconds * 3) % 2 === 0) this.circle(17, -15, 4.2, 'rgba(239, 68, 68, 0.30)');
     } else {
@@ -266,7 +284,16 @@ export class Renderer {
         const flame = 4 + Math.sin(elapsedSeconds * 39) * 2;
         this.poly([-3, -29, 0, -38 - flame, 3, -29], 'rgba(249, 115, 22, 0.88)');
       }
-      this.blit(enemy.kind as SpriteKind, healthFraction);
+      const diffusionByKind: Record<string, { name: string; width: number }> = {
+        fighter: { name: 'fighter', width: 72 },
+        'dive-bomber': { name: 'dive-bomber', width: 74 },
+        ace: { name: 'ace', width: 68 },
+        'flak-barge': { name: 'bomber', width: 148 },
+        boss: { name: 'boss', width: 238 },
+      };
+      const diffusionSprite = diffusionByKind[enemy.kind];
+      const airDrawn = diffusionSprite !== undefined && this.blitDiffusion(diffusionSprite.name, diffusionSprite.width, true);
+      if (!airDrawn) this.blit(enemy.kind as SpriteKind, healthFraction);
       if (enemy.kind === 'fighter' || enemy.kind === 'dive-bomber') this.drawPropellerSpin(enemy.kind === 'fighter' ? 26 : 28, elapsedSeconds);
       if (enemy.kind === 'flak-barge') this.drawLiveTurret(0, 12, elapsedSeconds);
       if (enemy.kind === 'boss') this.drawBossDamageEffects(healthFraction, elapsedSeconds);

@@ -47,5 +47,8 @@ Reusable systems, each independently testable:
 - `src/render/` Canvas 2D renderer: code-drawn sprites, no image assets
 - `src/main.ts` boot, HUD, overlays, and responsive scaling
 
-All art is drawn in code and all sound is synthesized with Web Audio, so the
-payload ships zero binary assets.
+Aircraft, tank, and flak sprites in `public/sprites/` were generated with
+Google Imagen (via Antigravity) in a gritty pre-rendered style, then keyed and
+downscaled by `tools/process-sprites.py` (run with the project `.venv` Python);
+the renderer falls back to code-drawn sprites while images load. Terrain is
+drawn in code and all sound is synthesized with Web Audio.
