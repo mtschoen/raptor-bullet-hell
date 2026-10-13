@@ -214,3 +214,111 @@ canvas.game-canvas {
     font-size: 1.05rem;
   }
 }
+.touch-deck {
+  display: none;
+}
+@media (pointer: coarse) {
+  .touch-deck.is-visible {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 8;
+    display: grid;
+    grid-template-columns: minmax(148px, 3fr) minmax(118px, 2fr);
+    align-items: stretch;
+    gap: clamp(20px, 6vw, 44px);
+    width: min(100%, 560px);
+    margin-inline: auto;
+    padding: 8px max(10px, env(safe-area-inset-right, 0px))
+      calc(8px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+    background: rgba(5, 8, 15, 0.94);
+    border-top: 1px solid #263449;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .cabinet.is-playing {
+    padding-bottom: calc(152px + env(safe-area-inset-bottom, 0px));
+  }
+  .cabinet.is-playing .stage-frame {
+    max-height: max(230px, calc(100dvh - 352px));
+  }
+  .touch-direction-pad {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .touch-action-pad {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 8px;
+  }
+  .touch-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-width: 44px;
+    min-height: 48px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: #111c2e;
+    color: #e2e8f0;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    touch-action: none;
+    box-shadow: 0 3px 0 #020617;
+  }
+  .touch-button svg {
+    width: 26px;
+    height: 26px;
+    fill: currentColor;
+  }
+  .touch-button.is-held {
+    background: #164e63;
+    border-color: #67e8f9;
+    color: #ecfeff;
+  }
+  .touch-button[data-touch-control='left'] {
+    grid-column: 1;
+    grid-row: 1 / -1;
+  }
+  .touch-button[data-touch-control='right'] {
+    grid-column: 3;
+    grid-row: 1 / -1;
+  }
+  .touch-button[data-touch-control='up'] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .touch-button[data-touch-control='down'] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .touch-button[data-touch-control='fire'] {
+    background: #7f1d1d;
+    border-color: #f87171;
+    color: #fee2e2;
+    font-size: 1.05rem;
+  }
+  .touch-button[data-touch-control='fire'].is-held {
+    background: #b91c1c;
+    border-color: #fca5a5;
+    color: #ffffff;
+  }
+  .touch-button[data-touch-control='bomb'] {
+    color: #fde68a;
+    font-size: 0.78rem;
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  .touch-deck.is-visible {
+    gap: 12px;
+  }
+  .touch-direction-pad,
+  .touch-action-pad {
+    gap: 6px;
+  }
+}

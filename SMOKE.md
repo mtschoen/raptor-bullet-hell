@@ -27,6 +27,12 @@ confirm enemies fall and drop power-ups, take a hit and confirm respawn
 invulnerability, press Shift to bomb, reach wave 5 for the boss, die three
 times for game over, then Enter to restart.
 
+On a touch device (or with coarse-pointer emulation at a phone size): start
+a mission and confirm the D-pad, FIRE, and BOMB deck appears at the bottom;
+hold FIRE and confirm the jet fires, hold two directions at once and confirm
+diagonal flight, tap BOMB and confirm the bomb fires once, then pause and
+confirm the deck hides.
+
 ## Setup
 
 None. Node 20+ and `npm install` only.

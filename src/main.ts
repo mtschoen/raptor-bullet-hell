@@ -1,6 +1,6 @@
 import './style.css';
 import { AudioEngine } from './audio/audio-engine';
-import { InputState } from './engine/input';
+import { InputState, type TouchControl } from './engine/input';
 import { startLoop } from './engine/loop';
 import { Game } from './game/game';
 import { PLAY_FIELD_HEIGHT, PLAY_FIELD_WIDTH } from './game/types';
@@ -66,7 +66,7 @@ function boot(): void {
   const startText = createElement(
     'p',
     '',
-    'Pilot the Allied jet through Axis waves, a tribute to Raptor: Call of the Shadows. Move with arrow keys or WASD, fire with Space, bomb with Shift, pause with P or Esc.',
+    'Pilot the Allied jet through Axis waves, a tribute to Raptor: Call of the Shadows. Move with arrow keys or WASD, fire with Space, bomb with Shift, pause with P or Esc. On a phone, steer with the D-pad and hold FIRE.',
   );
   const startButton = createElement('button', 'primary-button', 'Start Mission');
   startButton.type = 'button';
@@ -101,10 +101,101 @@ function boot(): void {
   const helpText = createElement(
     'p',
     'help-text',
-    'Keyboard: arrows or WASD move, Space fires, Shift drops a bomb, P or Esc pauses. Collect S, M, R, shield and bomb pickups.',
+    'Keyboard: arrows or WASD move, Space fires, Shift drops a bomb, P or Esc pauses. Touch: steer with the D-pad, hold FIRE, tap BOMB. Collect S, M, R, shield and bomb pickups.',
   );
-  cabinet.append(header, hudBar, stageFrame, controlsBar, helpText);
+
+  const touchDeck = createElement('div', 'touch-deck');
+  touchDeck.setAttribute('role', 'group');
+  touchDeck.setAttribute('aria-label', 'Touch controls');
+  const directionPad = createElement('div', 'touch-direction-pad');
+  directionPad.setAttribute('role', 'group');
+  directionPad.setAttribute('aria-label', 'Movement');
+  const actionPad = createElement('div', 'touch-action-pad');
+  actionPad.setAttribute('role', 'group');
+  actionPad.setAttribute('aria-label', 'Weapons');
+
+  function buildTouchButton(
+    control: TouchControl,
+    label: string,
+    svgPath: string | null,
+    text = '',
+  ): HTMLButtonElement {
+    const button = createElement('button', 'touch-button', text);
+    button.type = 'button';
+    button.dataset.touchControl = control;
+    button.setAttribute('aria-label', label);
+    if (svgPath !== null) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('aria-hidden', 'true');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', svgPath);
+      svg.append(path);
+      button.append(svg);
+    }
+    return button;
+  }
+
+  const upButton = buildTouchButton('up', 'Move up', 'M12 5l7 10H5z');
+  const leftButton = buildTouchButton('left', 'Move left', 'M5 12l10-7v14z');
+  const rightButton = buildTouchButton('right', 'Move right', 'M19 12L9 5v14z');
+  const downButton = buildTouchButton('down', 'Move down', 'M12 19L5 9h14z');
+  const fireButton = buildTouchButton('fire', 'Fire, hold to keep firing', null, 'FIRE');
+  const bombButton = buildTouchButton('bomb', 'Drop bomb', null, 'BOMB');
+  const touchButtons = [upButton, leftButton, rightButton, downButton, fireButton, bombButton];
+  directionPad.append(upButton, leftButton, rightButton, downButton);
+  actionPad.append(fireButton, bombButton);
+  touchDeck.append(directionPad, actionPad);
+
+  cabinet.append(header, hudBar, stageFrame, controlsBar, helpText, touchDeck);
   application.replaceChildren(cabinet);
+
+  const touchPointers = new Map<number, TouchControl>();
+  const touchControls: TouchControl[] = ['left', 'right', 'up', 'down', 'fire', 'bomb'];
+
+  function releaseTouchPointer(pointerId: number): void {
+    const control = touchPointers.get(pointerId);
+    if (control === undefined) return;
+    touchPointers.delete(pointerId);
+    input.touchButtonUp(control);
+    if (![...touchPointers.values()].includes(control)) {
+      for (const button of touchButtons) {
+        if (button.dataset.touchControl === control) button.classList.remove('is-held');
+      }
+    }
+  }
+
+  function clearTouchButtons(): void {
+    touchPointers.clear();
+    for (const control of touchControls) input.touchButtonUp(control);
+    for (const button of touchButtons) button.classList.remove('is-held');
+  }
+
+  for (const button of touchButtons) {
+    const control = button.dataset.touchControl as TouchControl;
+    button.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      audioEngine.handleUserGesture();
+      if (event.button > 0 || touchPointers.has(event.pointerId)) return;
+      try {
+        button.setPointerCapture(event.pointerId);
+      } catch {
+        /* capture is a nicety, the release handlers still run */
+      }
+      touchPointers.set(event.pointerId, control);
+      input.touchButtonDown(control);
+      button.classList.add('is-held');
+    });
+    button.addEventListener('pointerup', (event) => releaseTouchPointer(event.pointerId));
+    button.addEventListener('pointercancel', (event) => releaseTouchPointer(event.pointerId));
+    button.addEventListener('lostpointercapture', (event) => releaseTouchPointer(event.pointerId));
+    button.addEventListener('click', (event) => {
+      // Pointer contact already fired on touch down. Keep keyboard and assistive activation.
+      if (event.detail !== 0) return;
+      input.touchButtonDown(control);
+      input.touchButtonUp(control);
+    });
+  }
 
   let displayedState = '';
 
@@ -119,6 +210,9 @@ function boot(): void {
     muteButton.textContent = audioEngine.isMuted ? 'Unmute' : 'Mute';
     if (snapshot.state !== displayedState) {
       displayedState = snapshot.state;
+      cabinet.classList.toggle('is-playing', snapshot.state === 'playing');
+      touchDeck.classList.toggle('is-visible', snapshot.state === 'playing');
+      if (snapshot.state !== 'playing') clearTouchButtons();
       startOverlay.hidden = snapshot.state !== 'ready';
       pauseOverlay.hidden = snapshot.state !== 'paused';
       gameOverOverlay.hidden = snapshot.state !== 'over';
