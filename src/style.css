@@ -238,22 +238,22 @@ canvas.game-canvas {
     -webkit-touch-callout: none;
   }
   .cabinet.is-playing {
-    padding-bottom: calc(152px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(186px + env(safe-area-inset-bottom, 0px));
   }
   .cabinet.is-playing .stage-frame {
-    max-height: max(230px, calc(100dvh - 352px));
+    max-height: max(230px, calc(100dvh - 386px));
   }
   .touch-stick-zone {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 124px;
+    min-height: 158px;
     touch-action: none;
   }
   .touch-stick-base {
     position: relative;
-    width: 118px;
-    height: 118px;
+    width: 148px;
+    height: 148px;
     flex: none;
     border: 2px solid #334155;
     border-radius: 50%;
@@ -267,8 +267,8 @@ canvas.game-canvas {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 54px;
-    height: 54px;
+    width: 68px;
+    height: 68px;
     border: 1px solid #64748b;
     border-radius: 50%;
     background: #1e293b;
@@ -281,7 +281,7 @@ canvas.game-canvas {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    min-height: 124px;
+    min-height: 158px;
   }
   .touch-button {
     display: flex;
@@ -343,7 +343,7 @@ canvas.game-canvas {
     gap: 12px;
   }
   .touch-stick-base {
-    width: 104px;
-    height: 104px;
+    width: 128px;
+    height: 128px;
   }
 }

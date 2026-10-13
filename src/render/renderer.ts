@@ -135,6 +135,7 @@ export class Renderer {
     context.stroke();
   }
   private backgroundImageCache = new Map<string, HTMLImageElement>();
+  private backgroundPatternCache = new Map<string, CanvasPattern>();
   private backgroundPattern(name: string, scroll: number): CanvasPattern | null {
     let image = this.backgroundImageCache.get(name);
     if (image === undefined) {
@@ -143,9 +144,17 @@ export class Renderer {
       this.backgroundImageCache.set(name, image);
     }
     if (!image.complete || image.naturalWidth === 0) return null;
-    const pattern = this.context.createPattern(image, 'repeat');
-    if (pattern === null) return null;
-    pattern.setTransform(new DOMMatrix().translate(0, scroll % 512));
+    let pattern = this.backgroundPatternCache.get(name);
+    if (pattern === undefined) {
+      const createdPattern = this.context.createPattern(image, 'repeat');
+      if (createdPattern === null) return null;
+      pattern = createdPattern;
+      this.backgroundPatternCache.set(name, pattern);
+    }
+    // Whole-pixel offsets only: fractional pattern transforms crawl and
+    // flicker on mobile GPU rasterizers.
+    const offset = ((Math.round(scroll) % 512) + 512) % 512;
+    pattern.setTransform(new DOMMatrix().translate(0, offset));
     return pattern;
   }
   private diffusionImageCache = new Map<string, HTMLImageElement>();
@@ -180,7 +189,10 @@ export class Renderer {
   }
   private drawBackground(view: RendererView): void {
     const context = this.context;
-    const scroll = view.elapsedSeconds * 42;
+    // Snap the scrolling world to whole pixels. Fractional offsets make the
+    // repeating terrain patterns and the thin cyan water sparkles alias into
+    // flickering horizontal lines when mobile browsers upscale this canvas.
+    const scroll = Math.round(view.elapsedSeconds * 42);
     // Land is the continuous base on both sides of the channel.
     const landGradient = context.createLinearGradient(0, 0, PLAY_FIELD_WIDTH, 0);
     landGradient.addColorStop(0, '#5d703c');
@@ -258,7 +270,7 @@ export class Renderer {
         channelCenterAt(worldY) +
         (seededValue(index, 201) - 0.5) * Math.max(10, (channelHalfWidthAt(worldY) - 10) * 2);
       context.globalAlpha = 0.25 + seededValue(index, 205) * 0.45;
-      context.fillRect(sparkleX, sparkleY, 2 + seededValue(index, 204) * 5, 1.2);
+      context.fillRect(sparkleX, Math.round(sparkleY), 2 + seededValue(index, 204) * 5, 1.2);
     }
     context.globalAlpha = 1;
     context.strokeStyle = 'rgba(186, 230, 253, 0.14)';

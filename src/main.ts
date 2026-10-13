@@ -159,7 +159,7 @@ function boot(): void {
       steeringX /= magnitude;
       steeringY /= magnitude;
     }
-    const knobTravel = Math.max(0, radius - 27);
+    const knobTravel = Math.max(0, radius - stickKnob.offsetWidth / 2);
     stickKnob.style.transform = `translate(calc(-50% + ${steeringX * knobTravel}px), calc(-50% + ${steeringY * knobTravel}px))`;
     input.setTouchSteering(steeringX, steeringY);
   }
