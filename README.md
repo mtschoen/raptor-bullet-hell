@@ -89,20 +89,19 @@ for this project (see `LICENSE`).
 
 ## How it was made
 
-The first playable version was built with AI coding assistance in a single
-evening session on 12 October 2026, then refined the same night through human
-playtesting and direction on game feel, difficulty, and readability. The
-initial commit landed 34 files and about 4,000 lines of code, tests, and docs
-covering the game loop,
-wave director, bullet patterns, synthesized music and sound effects, and the
-Canvas renderer; three follow-up commits that night added the generated art
-and ground-unit readability fixes, for four commits in total.
+The first playable version was made on 2026-10-12 with the Muse harness,
+model `muse-wonder-1.0`, then refined through human playtesting and direction
+on game feel, difficulty, and readability. The build session ran 18:56 to
+23:30 PDT (about 4.5 hours), with 14 prompts and 12 subagents. The main
+thread plus subagents used about 82 million input tokens (80.4 million
+cached) and 285,000 output tokens. There were 16 commits from 22:48 on Oct 12
+to 02:15 on Oct 13.
 
-Aircraft, tank, and flak sprites (8 images) and the jungle, farmland, and
-water terrain tiles (3 images) were generated with Google Imagen through
-Antigravity image-generator subagents in a gritty pre-rendered 1994 arcade
-style, then keyed, downscaled, and tiled by the Python tools in `tools/`. The
-soundtrack and sound effects are synthesized live with Web Audio: no audio
-files are shipped. At first release the game is 19 TypeScript modules under
-`src/` with 13 Vitest tests across 5 files covering bullet patterns,
-particles, collision, waves, and weapons.
+Aircraft, tank, and flak sprites and the jungle, farmland, and water terrain
+tiles were generated with Google Imagen through Antigravity image-generator
+subagents in a gritty pre-rendered 1994 arcade style: 11 generated art images
+(8 sprites, 3 terrain tiles). They were then keyed, downscaled, and tiled by
+the Python tools in `tools/`. The soundtrack and sound effects are synthesized
+live with Web Audio: no audio files are shipped. At first release the game had
+22 Vitest tests covering bullet patterns, particles, collision, waves,
+weapons, and input.
